@@ -1,0 +1,87 @@
+#!/usr/bin/perl
+use strict;
+sub linfit(%)
+{
+    my (%data) = @_;
+    my ($x,$y);
+    my ($sx,$sy,$sxx,$sxy,$syy,$s) = (0,0,0,0,0,0);
+    for my $x (keys %data)
+    {
+	$y = $data{$x};
+	$sx+=$x; $sy+=$y; $sxx+=$x*$x; $sxy+=$x*$y; $syy+=$y*$y; $s++;
+    }
+    my $ssxx = $sxx - $sx*$sx/$s;
+    my $ssyy = $syy - $sy*$sy/$s;
+    my $ssxy = $sxy - $sx*$sy/$s;
+    my $m = $ssxy/$ssxx;
+    my $c = ($sy-$m*$sx)/$s;
+    return ($m,$c);
+}
+
+my $mkfn = "s.mk";
+if (defined $ARGV[0]) { $mkfn = $ARGV[0] }
+if (! -e $mkfn) { $mkfn = "Makefile" }
+if (! -e $mkfn) { $mkfn = "Makefile.g" }
+if (! -e $mkfn) { die "Please specify name of makefile" }
+
+open B,"< $mkfn";
+my ($start, $end, $blk, $urc);
+while (<B>)
+{
+    if (/^# range/) { chomp; $urc = 1; my @Q = split " ",$_; $start=$Q[2]; $end=$Q[3]; $blk=1}
+    if ($urc==0 and (/seq ([0-9]+) ([0-9]+)/)) { $start=$1; $end=$2;}
+    if (/-c ([0-9]+)/) { $blk=$1;}
+}
+close B;
+if ($urc == 0)
+{
+    $start *= $blk; $end = ($end+1)*$blk;
+}
+
+print "Sieving $start to $end\n";
+print "Block size $blk\n";
+
+open A,"ls -l --time-style=+%s *lasieve* |";
+my %bb;
+while (<A>)
+{
+    chomp;
+    my @X = split /[ .]+/,$_;
+    my $T = $X[5];
+    my ($bs,$be) = split /-/,$X[8];
+
+    if ($be-$bs == $blk) # avoid picking up short preliminary jobs
+    {
+	# now, does the .t file exist
+	my $u = int(($bs-$start)/$blk).".t";
+	print "Looking for $u to match $X[8]\n";
+	if ( -e $u)
+	{
+	    open B,"< $u";
+	    my @q = split "\r",(join "\n",<B>);
+	    $q[-1] =~ m/total yield: ([0-9]+), q=([0-9]+) \(([0-9.]+) sec/;
+	    
+	    if (abs($2-$be) > 200)
+	    {
+		# it's not finished yet
+		my $X = $3*$1*$blk/($2-$bs);
+		my $Y = $3*$1;
+		print "Did ".($2-$bs)." in ".$Y."\n";
+		$bb{$be} = $T + ($X-$Y);
+	    }
+	    else
+	    {
+		$bb{$be}=$T;
+	    }
+	}
+    } 
+}
+
+for my $j (keys %bb)
+{
+    #print $j," ",$bb{$j},"\n";
+}
+
+my ($M,$C) = linfit(%bb);
+print "Time per Q is about ",sprintf("%.1f",1000*$M)," milliseconds\n";
+print "Estimated end time is ",scalar(localtime($C+$M*$end)),"\n";

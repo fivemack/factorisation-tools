@@ -1,0 +1,121 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+sub findlastQ
+{
+    my @lines = @{$_[0]};
+    my %numbers;
+    my $targc = -1;
+    for my $j (@lines)
+    {
+	my ($xy,$rr,$aa) = split ":",$j;
+	if (defined $aa)
+	{
+	    my @rrx = split ",",$rr; my @aax = split ",",$aa;
+	    for my $w (@aax,@rrx)
+	    {
+		$numbers{$w}++;
+		if ($numbers{$w} > $targc) { $targc = $numbers{$w} }
+	    }
+	}
+    }
+    for my $w (keys %numbers)
+    {
+	if ($numbers{$w} == $targc)
+	{
+	    return hex($w);
+	}
+    }
+}
+
+my $btime;
+open A,"< /proc/stat"; while (<A>) { if (/^btime ([0-9]*)/) { $btime = $1 } }
+
+my $jiffies_per_second = 100;
+
+my (%runt, %cput, %isnfs);
+my @nfspids;
+
+my @processes = split "\n",`ls -d /proc/[0-9]*`;
+for my $u (@processes) { $u =~ m/proc.([0-9]*)/; $u=$1; }
+@processes = sort {$a <=> $b} @processes;
+for my $i (@processes)
+{
+    if ($i =~ m#^[0-9]+$#)
+	{
+	    my $pname = readlink("/proc/".$i."/exe");
+	    if (defined $pname)
+	    {
+		if ($pname =~ /lasieve/)
+		{
+		    my @statl = split " ",`cat /proc/$i/stat`;
+		    my $runtime_cpu = $statl[13];
+		    my $starttime_jiffies = $statl[21];
+		    my $now = time;
+		    
+		    my $starttime_rt = $btime + $starttime_jiffies/$jiffies_per_second;
+		    my $runtime_real = $now - $starttime_rt;
+		    
+		    # CPU times are measured in centiseconds ...
+		    if ($runtime_real == 0 or $runtime_real > 1e7) { $runtime_real = $runtime_cpu/100 }
+		    push @nfspids, $i;
+		    $runt{$i}=$runtime_real;
+		    $cput{$i}=$runtime_cpu/100;
+		    $isnfs{$i}=1;
+#		    print $i," ",$pname,"\n";
+		}
+	    }
+	}
+}
+#print "NFS PIDs are ",join " ",@nfspids,"\n";
+
+my (%runs, %etas, %acs, %ercs);
+
+for my $j (@nfspids)
+{
+#    print "Checking PID $j\n";
+    my @cmdline = split "\x00",`cat /proc/$j/cmdline`;
+    my ($side, $pn, $startQ, $endQ);
+    for my $ui (0..$#cmdline)
+    {
+	my $u = $cmdline[$ui];
+	if ($u eq "-a") {$side = "alg"; $pn = $cmdline[$ui+1];}
+	if ($u eq "-r") {$side = "rat"; $pn = $cmdline[$ui+1];}
+	if ($u eq "-f") {$startQ = $cmdline[$ui+1];}
+	if ($u eq "-c") {$endQ = $cmdline[$ui+1]+$startQ;}
+    }
+    for my $lsofline (split "\n",`lsof -p $j`)
+     {
+ 	my @fields = split " ",$lsofline;
+	if ($fields[3] eq "cwd") { $pn = $fields[8]."/".$pn; push @{$runs{$pn}},$j;}
+ 	if ($fields[3] =~ /[345][uw]$/)
+ 	{
+# 	    print $fields[8],"\n";
+# 	    @terms = split "[.-]",$fields[8];
+#	    $startQ=$terms[-2]; $endQ=$terms[-1];
+#	    print "wcing $fields[8]\n";
+	    my $nl = (split " ",`wc -l $fields[8]`)[0];
+#	    if ($fields[8] =~ /lasieve-0/) {$side="alg"};
+#	    if ($fields[8] =~ /lasieve-1/) {$side="rat"};
+ 	    my @lastfew = split "\n",`tail $fields[8]`;
+	    my $lastQ = findlastQ(\@lastfew);
+	    my $eta = $runt{$fields[1]} * (($endQ-$lastQ)/($lastQ-$startQ));
+	    $eta = time + $eta;
+	    my $erc = $nl * (($endQ-$startQ)/($lastQ-$startQ)); $ercs{$pn}+=$erc; $acs{$pn}+=$nl;
+	    my $rhr = $runt{$fields[1]}/3600; my $chr=$cput{$fields[1]}/3600;
+	    my $qprhr = ($lastQ-$startQ)/$rhr;
+	    print $fields[1]," (",$side,") has run for ",sprintf("%.1f",$rhr)," hours (",sprintf("%.1f",$chr)," CPU), produced ".$nl." relations, last Q is ",$lastQ," (",sprintf("%X",$lastQ),") ";
+	    print sprintf("%.1f",100000/$qprhr)," hrs/100kQ\n";
+	    print "ETA ",scalar(localtime($eta)),"  ERC ",int($erc),"\n";
+	    if (! defined $etas{$pn} || ($eta > $etas{$pn})) { $etas{$pn} = $eta }
+	}
+    }
+}
+
+for my $j (sort { $etas{$b} <=> $etas{$a} } keys %runs)
+{
+    print $j," sieved by ",scalar @{$runs{$j}}," process";
+    if (scalar @{$runs{$j}} > 1) { print "es"; }
+    print " (",join " ",@{$runs{$j}},"):  ",int($acs{$j}),"/",int($ercs{$j})," (",int($ercs{$j}-$acs{$j}),"to go)\n\tLast one should be done ".scalar(localtime($etas{$j}))."\n";
+}

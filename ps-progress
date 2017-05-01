@@ -1,0 +1,2 @@
+echo $(grep -m1 -n $(tail -n 1 msieve.dat.ms | awk '{print $7}') msieve.dat.m | cut -d: -f1) / $(wc -l msieve.dat.m | cut -d' ' -f1)
+echo $(grep -m1 -n $(tail msieve.dat.p | grep "Y1" | awk '{print $2}') msieve.dat.ms | cut -d: -f1) / $(wc -l msieve.dat.ms | cut -d' ' -f1)

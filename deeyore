@@ -1,0 +1,1 @@
+for u in */ps/dd*; do [ -e $u/eeyore ] && (rm $u/eeyore; touch -r $u/msieve.log $u); done
