@@ -40,7 +40,7 @@ if ($mprime_pid ne "")
 
 open A, "< /proc/cpuinfo";
 my ($ht,$ncpu)=(1,0);
-while (<>)
+while (<A>)
 {
     if (/Intel/) { $ht = 2; }
     if (/MHz/) { $ncpu++; }
