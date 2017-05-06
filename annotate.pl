@@ -31,7 +31,8 @@ if (! -e "$hd/$mkname") { $mkname = "Makefile.g"; }
 if (! -e "$hd/$mkname") { die "Can't figure out name of makefile in $hd\n" }
 
 print <<"EOM";
-awk '{a+=\$2} END {print a}' < $hd/ggnfs.log >> msieve.log 
+A=\$(awk '{a+=\$2} END {print a}' < $hd/ggnfs.log)
+echo \$A \$(echo "scale=4;\$A.00/86400.00" | bc)  >> msieve.log 
 ls -l $hd/gnfs.lasieve-0.* >> msieve.log 
 cat $hd/{gnfs,$mkname} >> msieve.log
 EOM
