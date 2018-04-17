@@ -13,12 +13,17 @@ close T;
 
 my %gotit;
 
-my ($lp, $alim,$ntc) = @ARGV;
+my ($lpx, $alim,$ntc) = @ARGV;
+my $lp = $lpx;
 my $ss = 14;
+my $nlpa = 2; my $nlpr = 2;
 my $batched = 0;
-if ($lp =~ m/([0-9]*):([0-9]*)/) { $ss=$2; $lp=$1; }
+if ($lpx =~ m/([0-9]*):([0-9]*)/) { $ss=$2; $lp=$1; }
+if ($lpx =~ m/([0-9]*)\.3[aA]:([0-9]*)/) { $ss=$2; $lp=$1; $nlpa = 3;}
+if ($lpx =~ m/([0-9]*)\.3[rR]:([0-9]*)/) { $ss=$2; $lp=$1; $nlpr = 3;}
 if (!defined $lp or !defined $alim) { die "Syntax: mkts.pl <large prime bound> <alim>\n" }
 if (!defined $ntc) { print " Testing top eight (specify at end of command line; negative for batched run)\n"; $ntc=8 }
+my $rlim = $alim;
 
 if ($ntc < 0) { $ntc = -$ntc; $batched = 1; }
 
@@ -78,7 +83,7 @@ for my $u (0..$ntc)
     open Q,"> ts/gnfs.".($ntc-$u);
     print Q "n: $N\n";
     print Q join "\n",@{$hst->[$u]->[1]};
-    print Q "\nlpbr: $lp\nlpba: $lp\nmfbr: ".2*$lp."\nmfba: ".2*$lp."\nalambda: 2.6\nrlambda: 2.6\nalim: $alim\nrlim: $alim\n";
+    print Q "\nlpbr: $lp\nlpba: $lp\nmfbr: ".$nlpr*$lp."\nmfba: ".$nlpa*$lp."\nalambda: ".$nlpa.".6\nrlambda: ".$nlpr.".6\nalim: $alim\nrlim: $rlim\n";
     close Q;
 }
 
