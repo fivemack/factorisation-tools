@@ -2,47 +2,56 @@
 use strict;
 use Cwd;
 use File::Copy;
-my $path = getcwd();
 
-$path =~ m#/([0-9]+\.[0-9]+)[./]#;
-my @paths = split "\n",`find /home/nfsworld -maxdepth 1 -name "aliquot*" -type d`;
-
-my @searched; my $found = "";
-
-# see if you're in a local /la directory
-if ($path =~ m#/la$#)
+my $found = "";
+if (defined $ARGV[0])
 {
-    my $hd = "$path/../s";
-    if (! -d $hd)
-    {
-	push @searched, $hd;
-    }
-    else
-    {
-	$found = $hd;
-    }
+    # assume we are given the top directory, we need /s
+    $found = $ARGV[0]."/s";
 }
-
-# look in all the plausible places you might be running the sieving
-if ($found eq "")
+else
 {
-    for my $d (@paths)
+    my $path = getcwd();
+    
+    $path =~ m#/([0-9]+\.[0-9]+)[./]#;
+    my @paths = split "\n",`find /home/nfsworld -maxdepth 1 -name "aliquot*" -type d`;
+    
+    my @searched;
+    
+    # see if you're in a local /la directory
+    if ($path =~ m#/la$#)
     {
-	my $hd = "$d/$1/s";
-	
-	if (! -d $hd )
+	my $hd = "$path/../s";
+	if (! -d $hd)
 	{
-	    push @searched, $found;
+	    push @searched, $hd;
 	}
 	else
 	{
 	    $found = $hd;
-	    last;
 	}
     }
+    
+    # look in all the plausible places you might be running the sieving
+    if ($found eq "")
+    {
+	for my $d (@paths)
+	{
+	    my $hd = "$d/$1/s";
+	    
+	    if (! -d $hd )
+	    {
+		push @searched, $found;
+	    }
+	    else
+	    {
+		$found = $hd;
+		last;
+	    }
+	}
+    }
+    if ($found eq "") { print "Can't find relations; searched ".join(" ",@searched)."\n"; die }
 }
-
-if ($found eq "") { print "Can't find relations; searched ".join(" ",@searched)."\n"; die }
 
 copy("$found/../ps/worktodo.ini",".");
 [ -e "$found/gnfs" ] || die "$found/gnfs not found\n";
