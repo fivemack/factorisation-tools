@@ -1,6 +1,12 @@
+#!/usr/bin/perl
+
 sub worked($)
 {
     my ($density) = @_;
+
+    if (-e "fail.$density") { return 0; }
+    if (-e "msieve.dat.cyc.$density") { return 1; }
+
     my @ml;
     system "/home/nfsworld/msieve-svn/trunk/msieve -v -nc1 target_density=$density";
     open K,"< msieve.log";
@@ -8,12 +14,13 @@ sub worked($)
     {
 	push @ml, $_;
     }
+    my $success = 0;
     foreach (@ml[$#ml-6 .. $#ml])
     {
-	if (/filtering wants [0-9]* more relations/) { return 0; }
-	if (/matrix probably cannot build/) { return 0; }
+	if (/RelProc/) { $success = 1; }
     }
     close K;
+    if ($success == 0) { system "touch fail.$density"; return 0; }
     if (-e "msieve.dat.cyc") { system "cp msieve.dat.cyc msieve.dat.cyc.$density"; }
     return 1;
 }
