@@ -3,7 +3,7 @@ use strict;
 
 my %oldstep;
 
-open A,"< report.20170401";
+open A,"< report.$ARGV[0]";
 while (<A>)
 {
     my ($n, $step) = split "\t",$_;
@@ -11,7 +11,7 @@ while (<A>)
 }
 close A;
 
-open B,"< report.20170501";
+open B,"< report.$ARGV[1]";
 while (<B>)
 {
     my ($n, $step) = split "\t",$_;
