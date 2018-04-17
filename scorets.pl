@@ -25,6 +25,9 @@ for my $u (@files)
     for my $v (@xlines) { push @lines, split "\r",$v }
     if ($#lines != -1)
     {
+	# restrict to lines containing 'total yield'
+	@lines = grep(/^total yield/, @lines);
+	
 	$lines[1] =~ m/q=([0-9]+) \(/; my $q0 = $1;
 	if ($u =~ m/[0-9]*\.([0-9]*)\.t/) { $q0 = $1; } # if the q0 is in the filename
 	$lines[-1] =~ m/total yield: ([0-9]*).*q=([0-9]*).*\(([0-9.]+) sec\/rel\)/;
