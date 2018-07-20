@@ -1,0 +1,15 @@
+L(21*n) - base number is L(21*n)*L(n)/L(3*n)/L(7*n)
+
+polynomial is something like
+skew: 1.0
+c6: 1
+c5: 1
+c4: -6
+c3: -6
+c2: 8
+c1: 8
+c0: 1
+Y1: -1
+Y0: lucas(2*n)
+
+but probably worth solving in GP first
