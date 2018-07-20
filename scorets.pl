@@ -13,7 +13,7 @@ sub meansd($)
 
 my @files = glob("*.*.t");
 
-my ($yield,$time);
+my ($yield,$time,$rk);
 for my $u (@files)
 {
     $u =~ m/^(.+)\.([0-9]+)\.t/;
@@ -36,7 +36,24 @@ for my $u (@files)
     }
 }
 
-for my $q (sort {$a <=> $b} (keys %{$yield}))
+# determine rankings
+for my $statn ([$yield,-1],[$time,1])
+{
+    my (@r,@s,@t); my $r0 = 0;
+    for my $q (keys %{$yield})
+    {
+	push @r,$r0++;
+	push @t,$q;
+	$s[$q] = (meansd($statn->[0]->{$q}))[0];
+    }
+    @r = sort {$s[$a] <=> $s[$b]} @r;
+    for my $q (0..$#r)
+    {
+	$rk->{$r[$q]}+=$statn->[1]*$q;
+    }
+}
+
+for my $q (sort {$rk->{$a} <=> $rk->{$b}} (keys %{$yield}))
 {
     print $q,"\t";
     my @line;
@@ -45,6 +62,9 @@ for my $q (sort {$a <=> $b} (keys %{$yield}))
 	my ($mu,$sigma) = meansd($stat);
 	push @line,($mu,$sigma); 
     }
+    push @line, $rk->{$q};
     print sprintf("%.1f",$line[0]),"\t",sprintf("%.1f",$line[1]),"\t";
-    print sprintf("%.4f",$line[2]),"\t",sprintf("%.6f",$line[3]),"\n";
+    print sprintf("%.4f",$line[2]),"\t",sprintf("%.6f",$line[3]),"\t";
+    print sprintf("%.1f",$line[4]),"\n";
+    
 }
