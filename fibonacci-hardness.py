@@ -10,6 +10,8 @@ adj=[[21,6,12./21],[15,4,8./15],[7,6,6./7],[5,4,4./5],[11,5,10./11],[3,6,2./3]]
 
 ladj=[[21,6,12./21],[15,4,8./15],[14,6,6./7],[10,4,4./5],[6,4,2./3],[11,5,10./11],[3,6,2./3]]
 
+hmax=360
+
 f=open("fibonacci.txt")
 for line in f:
     r = re.match(r'F([0-9]+)\W.*C([0-9]+)',line)
@@ -24,8 +26,9 @@ for line in f:
                 sdeg=p[1]
                 ssz=ssz*p[2]
                 break
-            
-        print(["F",n,gsz,sdeg,ssz])
+
+        if (gsz<hmax):
+            print(["F",n,gsz,sdeg,ssz,gsz/ssz])
 
 f=open("lucas.txt")
 for line in f:
@@ -41,7 +44,6 @@ for line in f:
                 sdeg=p[1]
                 ssz=ssz*p[2]
                 break
-            
-        print(["L",n,gsz,sdeg,ssz])
-
     
+        if (gsz<hmax):
+            print(["L",str(n)+aurl,gsz,sdeg,ssz,gsz/ssz])
