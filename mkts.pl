@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 use strict;
 
 my $skewmax = 250e6;
