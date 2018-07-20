@@ -6,6 +6,6 @@ for my $u (@x)
     my $age2 = -M "$u.gpl";
     if ($age1 < $age2)
     {
-	system "python for_factorization.ath.cx.py $u";
+	system "python /home/nfsworld/aliquot-tools/for_factorization.ath.cx.py $u";
     }
 }
