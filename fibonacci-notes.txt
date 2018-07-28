@@ -13,3 +13,28 @@ Y1: -1
 Y0: lucas(2*n)
 
 but probably worth solving in GP first
+
+L(10*n+5)
+
+has Aurifeullian factors A=5*Fib(2n+1)^2-5*Fib(2n+1)+1
+                         B=5*Fib(2n+1)^2+5*Fib(2n+1)+1
+
+so:
+lucas(n)=fibonacci(n-1)+fibonacci(n+1)
+G=fibonacci(2*n+1)
+F1=fibonacci(n)
+F2=fibonacci(n+1)
+N=5*G^2+5*G+1
+ (check that N is divisible by the composite)
+  (you can't do a manual expand-in-base-F1, but lattice reduction is your friend)
+lindep([N,F1^4,F1^3*F2,F1^2*F2^2,F1*F2^3,F2^4])
+
+skew: 1.821
+c4: 1
+c3: 3
+c2: 9
+c1: 7
+c0: 11
+Y1: -F1
+Y0: F2
+
