@@ -76,6 +76,12 @@ for my $f (@dats)
 
 # ok, this has pulled out the top N
 
+my $alam = $nlpa * $lp / (log($alim)/log(2));
+my $rlam = $nlpr * $lp / (log($rlim)/log(2));
+
+$alam = sprintf("%.1f",$alam);
+$rlam = sprintf("%.1f",$rlam);
+
 system "mkdir ts";
 
 for my $u (0..$ntc)
@@ -84,7 +90,7 @@ for my $u (0..$ntc)
     open Q,"> ts/gnfs.".($ntc-$u);
     print Q "n: $N\n";
     print Q join "\n",@{$hst->[$u]->[1]};
-    print Q "\nlpbr: $lp\nlpba: $lp\nmfbr: ".$nlpr*$lp."\nmfba: ".$nlpa*$lp."\nalambda: ".$nlpa.".6\nrlambda: ".$nlpr.".6\nalim: $alim\nrlim: $rlim\n";
+    print Q "\nlpbr: $lp\nlpba: $lp\nmfbr: ".$nlpr*$lp."\nmfba: ".$nlpa*$lp."\nalambda: ".$alam."\nrlambda: ".$rlam."\nalim: $alim\nrlim: $rlim\n";
     close Q;
 }
 
