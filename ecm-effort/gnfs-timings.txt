@@ -1,0 +1,10 @@
+# average sieving times *in hours*
+tractor	135	206.8
+tractor	140	363.6
+tractor	145	586.5
+tractor	150	1134.8
+tractor	155	2023.4
+tractor	160	3398.7
+tractor	165	6183.5
+tractor	170	11991.7
+tractor	175	17140.6
