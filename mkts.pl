@@ -79,6 +79,9 @@ for my $f (@dats)
 my $alam = $nlpa * $lp / (log($alim)/log(2));
 my $rlam = $nlpr * $lp / (log($rlim)/log(2));
 
+my $mfbr = $nlpr*$lp; if ($mfbr>96) { $mfbr=96; }
+my $mfba = $nlpa*$lp; if ($mfba>96) { $mfba=96; }
+
 $alam = sprintf("%.1f",$alam);
 $rlam = sprintf("%.1f",$rlam);
 
@@ -90,7 +93,7 @@ for my $u (0..$ntc)
     open Q,"> ts/gnfs.".($ntc-$u);
     print Q "n: $N\n";
     print Q join "\n",@{$hst->[$u]->[1]};
-    print Q "\nlpbr: $lp\nlpba: $lp\nmfbr: ".$nlpr*$lp."\nmfba: ".$nlpa*$lp."\nalambda: ".$alam."\nrlambda: ".$rlam."\nalim: $alim\nrlim: $rlim\n";
+    print Q "\nlpbr: $lp\nlpba: $lp\nmfbr: $mfbr\nmfba: $mfba\nalambda: ".$alam."\nrlambda: ".$rlam."\nalim: $alim\nrlim: $rlim\n";
     close Q;
 }
 
