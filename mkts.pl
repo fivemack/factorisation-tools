@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 
-my $skewmax = 250e6;
+my $skewmax = 1e9;
 my @dats;
 if (-e "ps/msieve.dat.p") { @dats = "ps/msieve.dat.p" }
 push @dats, glob("ps/*/msieve.dat.p");
