@@ -55,6 +55,7 @@ for my $toplevel ("d","e")
 	    if ($j>=2)
 	    {
 		my ($project,$rels)=($cols[2],$cols[11]);
+		$project =~ s/ /_/g;
 		$project = "[".$toplevel."] ".$project;
 		$rels =~ s/,//g;
 		if ($rels > 0)
@@ -71,7 +72,14 @@ for my $toplevel ("d","e")
 	    }
 	}
 	$f =~ m/[de]\.([0-9]{10})/;
-	$output->{$1}=$oline;
+	# do not overwrite the d. terms with the e. ones
+	for my $u (0..scalar @{$oline})
+	{
+	    if (! defined $output->{$1}->[$u])
+	    {
+		$output->{$1}->[$u]=$oline->[$u];
+	    }
+	}
     }
 }
 
@@ -79,18 +87,18 @@ for my $toplevel ("d","e")
 
 my @toad = sort keys %{$output};
 
-print join "\nDEBUG",@toad;
+#print join "\nDEBUG",@toad;
 
 for my $q (1..$#toad)
 {
     my @resultat;
     
-    open B,">> delta-$q";
     my $now = $output->{$toad[$q]};
     my $then = $output->{$toad[$q-1]};
     my $ncol = $next_ocol;
     for my $u (0..$ncol)
     {
+#	print "handling at $toad[$q] col $u ($projnames[$u+1])\n";
 	if (defined $now->[$u] and defined $then->[$u])
 	{
 	    my $progress;
@@ -98,12 +106,11 @@ for my $q (1..$#toad)
 	    else { $progress = "+".sprintf("%6.2g",($now->[$u] - $then->[$u])); }
 	    $progress =~ s/ //g;
 	    my $pn = $projnames[$u+1];
-	    $pn =~ s/ /_/g;
 	    push @resultat,[$pn, commify($now->[$u]), $progress];
 	}
     }
     
-    my @rcw;
+    my @rcw=(0,0,0);
     for my $u (0..2)
     {
 	for my $q (@resultat)
@@ -112,14 +119,16 @@ for my $q (1..$#toad)
 	    if ($l > $rcw[$u]) { $rcw[$u]=$l; }
 	}
     }
-    
+
+    open B,"> recent-progress-".$toad[$q];
+  
     for my $q (@resultat)
     {
-	for my $u (0..3)
+	for my $u (0..2)
 	{
 	    my $l = length($q->[$u]);
 	    my $j = " "x($rcw[$u]-$l);
-	    if ($u != 2)
+	    if ($u != 1)
 	    {
 		print B $q->[$u],$j," ";
 	    }
