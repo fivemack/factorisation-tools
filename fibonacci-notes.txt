@@ -14,6 +14,8 @@ Y0: lucas(2*n)
 
 but probably worth solving in GP first
 
+fib(21*n) is also a nice polynomial in luc(2n)
+
 L(10*n+5)
 
 has Aurifeullian factors A=5*Fib(2n+1)^2-5*Fib(2n+1)+1
@@ -47,3 +49,12 @@ c1: -10
 c0: 1
 Y1: -1
 Y0: fib(2n+1)
+
+
+Fib(11n)
+ do lindep on fib(i)^2+fib(j)^2 and fib(i)*fib(j)
+  rather than trying manually to desymmetrise the decic
+ n=131 benefits from rational side sieve + 3 rational-side large primes
+ 11*143 C205 is probably GNFS, 11*151 is a hard SNFS
+
+
