@@ -25,12 +25,12 @@ for my $toplevel ("d","e")
     my $output;
     my %ocols; my $next_ocol = 0;
     
-    my @efiles = glob("$toplevel.*");
+    my @efiles = glob("$toplevel.2020*");
     for my $f (@efiles)
     {
 	my $oline;
-	$f =~ m/[de]\.([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})/;
-	my ($Y,$M,$D,$h)=($1,$2,$3,$4);
+#	$f =~ m/[de]\.([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})/;
+#	my ($Y,$M,$D,$h)=($1,$2,$3,$4);
 	my @stat = stat $f; my $mt = $stat[9];
 	
 	my $content;
@@ -40,7 +40,10 @@ for my $toplevel ("d","e")
 	    $content = <A>;
 	    close A;
 	}
-	$content =~ m#Now sieving</h2>.*(<table .*</table>)#;
+
+	$content = join "@",(split "\n",$content);
+	
+	$content =~ m#(<table.*?/table>)#;
 	my $sievetab = $1;
 	my @rows = split "<tr>",$sievetab;
 	for my $j (0..$#rows)
@@ -74,7 +77,7 @@ for my $toplevel ("d","e")
 
     my @toad = sort keys %{$output};
     my $now = $output->{$toad[-1]};
-    my $then = $output->{$toad[-5]};
+    my $then = $output->{$toad[-2]};
     my $ncol = $next_ocol;
     for my $u (0..$ncol)
     {
@@ -91,7 +94,7 @@ for my $toplevel ("d","e")
     }
 }
 
-my @rcw;
+my @rcw=(0,0,0,0);
 for my $u (0..3)
 {
     for my $q (@resultat)
