@@ -79,7 +79,10 @@ for my $toplevel ("d","e")
 		}
 	    }
 	}
-	$output->{$mt}=$oline;
+	if (defined $oline)
+	{
+	    $output->{$mt}=$oline;
+	}
     }
 
 # rewrite project names to come out right in gnuplot
@@ -124,7 +127,7 @@ for my $toplevel ("d","e")
     my $firstline = 1; my @prev; my $t0 = -1;
     for my $t (sort {$a <=> $b} keys %{$output})
     {
-	if ($firstline != 1 && defined @{$output->{$t}})
+	if ($firstline != 1 && defined $output->{$t})
 	{
 	    my @delta = @{$output->{$t}};
 	    for my $v (0..$num_ocols)
