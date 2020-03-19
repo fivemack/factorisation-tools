@@ -85,13 +85,15 @@ for my $toplevel ("d","e")
 # rewrite project names to come out right in gnuplot
     for my $pn (@projnames)
     {
-	if ($pn =~ m/([0-9]*)_([0-9]*)_minus1/) { $pn = "$1^$2-1"; }
+	$pn =~ s/__/.../g;
+	if ($pn =~ m/^([0-9.]*)_([0-9]*)(_minus1|m1)$/) { $pn = "$1^$2-1"; }
 	elsif ($pn =~ m/GW_([0-9]*)_([0-9]*)/) { $pn = "$2*$1^$2-1"; }
-	elsif ($pn =~ m/GC_([0-9]*)_([0-9]*)/) { $pn = "$2*$1^$2+1"; }
+	elsif ($pn =~ m/GC_([0-9]*)_([0-9]*)/ or 
+	       $pn =~ m/^([0-9]+)_([0-9]+)p$/) { $pn = "$2*$1^$2+1"; }
 	elsif ($pn =~ m/C([0-9]*)_([0-9]*)_([0-9]*)/) { $pn = "C$1 from $2^$3+$3^$2"; }
 	elsif ($pn =~ m/W_([0-9]*)/) { $pn = "$1*2^$1-1"; }
 	elsif ($pn =~ m/C_([0-9]*)/) { $pn = "$1*2^$1+1"; }
-	elsif ($pn =~ m/([0-9]{5})_([0-9]*)/)
+	elsif ($pn =~ m/(^[0-9]{5})_([0-9]*)$/)
 	{
 	    if (substr($1,2,1) eq substr($1,1,1))
 	    {
@@ -102,6 +104,8 @@ for my $toplevel ("d","e")
 		$pn = "near-repdigit ".(2*$2+1)." digits pattern $1";
 	    }
 	}
+	elsif ($pn =~ m/^([0-9]+)_([0-9]+)_([0-9]+)m$/)
+	{ $pn = "$1*$2^$3-1"; }
 
 	my $upn = ""; my $ss = 0;
 	for my $ci (0..length($pn))
