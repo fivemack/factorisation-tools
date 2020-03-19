@@ -154,15 +154,16 @@ int main(int argc, char** argv)
           else
             {
               /*              uint64_t sing=0; char badside='Z';
-              for (int i=0; i<nleft; i++)
-                if (get3(left, left_primes[i]/2)==1) { sing=left_primes[i]; badside='L'; break; }
-              if (badside == 'Z')
-                for (int i=0; i<nright; i++)
-                  if (get3(right, right_primes[i]/2)==1) { sing=right_primes[i]; badside='R'; break; }
-              printf("Sad with %s : singleton %c%lx\n", line, badside, sing); */
-        sad_ct++;
-      }
-  }
+			      for (int i=0; i<nleft; i++)
+			      if (get3(left, left_primes[i]/2)==1) { sing=left_primes[i]; badside='L'; break; }
+			      if (badside == 'Z')
+			      for (int i=0; i<nright; i++)
+			      if (get3(right, right_primes[i]/2)==1) { sing=right_primes[i]; badside='R'; break; }
+			      printf("Sad with %s : singleton %c%lx\n", line, badside, sing); */
+	      sad_ct++;
+	    }
+	}
     }
+  fprintf(stderr,"\n");
 }
 
