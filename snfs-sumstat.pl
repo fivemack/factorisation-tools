@@ -2,7 +2,7 @@ use strict;
 my (@alg, @rat);
 my $deg;
 
-open A,"< snfs";
+open A,"< snfs.6";
 while (<A>)
 {
     if (/c([0-9]): ([-0-9]+)/) { $alg[$1]=$2; if ($1>$deg) { $deg=$1; } }
@@ -12,8 +12,7 @@ close A;
 
 my @vals;
 
-open A,"< snfs.lasieve-1.268000000-268000999";
-while (<A>)
+while (<>)
 {
     my ($c,$r,$a)=split ":",$_;
     my ($X,$Y)=split ",",$c;
