@@ -25,6 +25,21 @@ sub worked($)
     return 1;
 }
 
+# rename .ini and .fb if they don't exist
+if (! -e "msieve.fb" || ! -e "worktodo.ini")
+{
+    my $x1 = glob("*.fb"); my $x2 = glob("*.ini");
+    if ($x1 ne "" && $x2 ne "")
+    {
+	system "mv $x1 msieve.fb";
+	system "mv $x2 worktodo.ini";
+    }
+    else
+    {
+	die "msieve.fb and worktodo.ini not found, nor any *.ini *.fb";
+    }
+}
+
 if (! worked(70) ) { die "Not enough relations to get started" }
 
 my $left = 70; 
