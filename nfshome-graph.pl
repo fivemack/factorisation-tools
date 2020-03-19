@@ -3,20 +3,39 @@ use strict;
 
 my $colct;
 
+my @now = localtime;
+my $tag = $now[3]; my $monat = $now[4]+1; my $jahr = $now[5]+1900;
+my $mglob = sprintf("%02d",$monat);
+my $fglob=$jahr.$mglob;
+my $fglob2="";
+if ($tag < 15)
+{
+    if ($monat != 1)
+    {
+	$fglob2=$jahr.sprintf("%02d",$monat-1);
+	$fglob = $jahr.$mglob;
+    }
+    else
+    {
+	$fglob2=($jahr-1)."12";
+    }
+}
+
 for my $toplevel ("d","e")
 {
     my $output;
     my %ocols; my $next_ocol = 0;
     my @projnames; $projnames[0]="Unix time";
-    
-    my @efiles = glob("$toplevel.*");
+
+    my @efiles = glob("$toplevel.$fglob*");
+    my @efiles2 = glob("$toplevel.$fglob2*");
+    @efiles=(@efiles,@efiles2);
     for my $f (@efiles)
     {
 	my $oline;
 	$f =~ m/[de]\.([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})/;
 	my ($Y,$M,$D,$h)=($1,$2,$3,$4);
 	my @stat = stat $f; my $mt = $stat[9];
-#    print "$f $mt\n";
 	
 	my $content;
 	{
@@ -25,13 +44,17 @@ for my $toplevel ("d","e")
 	    $content = <A>;
 	    close A;
 	}
-	$content =~ m#Now sieving</h2>.*(<table .*</table>)#;
+	# an extra newline got into the files at some point
+	$content =~ tr#\n# #;
+	$content =~ m#Now sieving</h2>.*?(<table .*?</table>)#;
 	my $sievetab = $1;
 	my @rows = split "<tr>",$sievetab;
 	for my $j (0..$#rows)
 	{
 	    $rows[$j] =~ s#</(table|tr)>##g;
+#	    print "Inspecting row $rows[$j]\n";
 	    my @cols = split "<td[^>]*>",$rows[$j];
+#	    print "It has",$#cols," columns\n";
 	    for my $i (0..$#cols)
 	    {
 		$cols[$i] =~ s#</td>##g;
