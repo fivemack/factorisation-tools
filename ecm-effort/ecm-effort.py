@@ -21,7 +21,7 @@ def fitlin(data):
         sxy = x*y + sxy
         syy = y*y + syy
 
-    print s, sx, sy, sxx, sxy, syy
+#    print(s, sx, sy, sxx, sxy, syy)
 
     ssxx = sxx - sx*sx/s;
     ssyy = syy - sy*sy/s;
@@ -93,7 +93,7 @@ for p in prior_work:
         sz_done = int(sz_done)
         done = done + [[n_done,sz_done]]
 
-print done
+print(done)
 
 machine = "tractor"
 if (len(sys.argv)==4):
@@ -130,7 +130,7 @@ else:
     nfs_time = 3600 * interpolate(gnfs_timing, targdig)
 
 
-print "Expected NFS time is ",nfs_time/86400," days"
+print("Expected NFS time is ",nfs_time/86400," days")
 
 # set up prior probability
 prior = {}
@@ -142,7 +142,7 @@ for i in range(30,int(targdig/2)):
 for j in range(30,int(targdig/2)):
     prior[j]=prior[j]/p0
 
-print prior
+print(prior)
 
 # apply initial curves
 for v in done:
@@ -160,16 +160,16 @@ for porpentine in range(20000):
     better_than_nfs = False
     for B1 in ecm_timing.keys():
         t_one_curve = interpolate(ecm_timing[B1], targdig)
-        print "t_one_curve = ",t_one_curve
+        print("t_one_curve = ",t_one_curve)
         success_one_curve = [ [k,success_prob(k,B1)*posterior[k]] for k in posterior.keys()]
         tot_success_one_curve = sum([v[1] for v in success_one_curve])
         scaled_time = t_one_curve / tot_success_one_curve
-        print "B1= ",B1," would have p=",tot_success_one_curve," eta=",scaled_time/86400," days"
+        print("B1= ",B1," would have p=",tot_success_one_curve," eta=",scaled_time/86400," days")
         if (scaled_time < best_t):
             better_than_nfs = True
             (best_B1,best_t) = (B1,scaled_time)
     if (better_than_nfs):
-        print "Best b1 is ",best_B1,"expected time",best_t/86400," days"
+        print("Best b1 is ",best_B1,"expected time",best_t/86400," days")
         # apply the best B1
         posterior = update(posterior, best_B1, 100)
         if (best_B1 in recipe.keys()):
@@ -177,13 +177,13 @@ for porpentine in range(20000):
         else:
             recipe[best_B1] = 100
     else:
-        print "And now NFS beats them"
+        print("And now NFS beats them")
         break
 
 R = recipe.keys()
-R.sort()
+Rs=sorted(R)
 
-print [[r,recipe[r]] for r in R]
+print([[r,recipe[r]] for r in Rs])
 
 q=[0 for s in range(1+int((targdig/2-30)/5))]
 for k in posterior.keys():
@@ -193,4 +193,4 @@ for k in posterior.keys():
 accum = 0
 for g in range(len(q)):
     accum = accum + q[g]
-    print "%2d..%2d %.4f %.4f" % (5*g+30,5*g+34,q[g],accum)
+    print("%2d..%2d %.4f %.4f" % (5*g+30,5*g+34,q[g],accum))
