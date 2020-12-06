@@ -40,10 +40,10 @@ if (! -e "msieve.fb" || ! -e "worktodo.ini")
     }
 }
 
-if (! worked(70) ) { die "Not enough relations to get started" }
+if (! worked(90) ) { die "Not enough relations to get started" }
 
-my $left = 70; 
-my $right = 134; my $delta = 64;
+my $left = 90; 
+my $right = 122; my $delta = 32;
 while (worked($right)) { $right += $delta; $delta += $delta; }
 
 while ($right - $left > 3)
