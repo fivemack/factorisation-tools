@@ -40,6 +40,10 @@ sub testranks
 }
 
 my @files = glob("*.*.t");
+# zero-size .t files from jobs-in-progress get ranked randomly
+# so strip them out (thanks cjwatson for the golf)
+@files = grep { -s } @files;
+
 my (@places,%hplaces);
 
 my ($yield,$time);
