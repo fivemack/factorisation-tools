@@ -16,6 +16,11 @@ if (machine == "pig" or machine == "tractor"):
 PROG_MSIEVE="/home/nfsworld/msieve-svn/trunk/msieve"
 PROG_GNFSDIR="/home/nfsworld/gnfs-batalov"
 
+if (machine == "butternut"):
+  PROG_ECM="/home/nfsworld/ecm71-gmp61/exe-HSW/ecm"
+  PROG_MSIEVE="/home/nfsworld/msieve"
+
+
 limit = 200
 nfslimit = 138
 
