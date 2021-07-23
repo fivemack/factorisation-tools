@@ -49,6 +49,7 @@ if (len(H)>1):
  line=int(H[1])
 u=int(H[0])
 
+lastlog=-1
 smallp = []
 for v in A:
  pp = int(v)
@@ -81,6 +82,11 @@ while (2 != 3):
   uf = uf[:-1]
   C.write(str(uu)+"="+uf+"\n")
   thislog=log(uu)/log(10)
+  if (lastlog==-1):
+    B.write("%d %.4f\n"%(line,thislog))
+  else:
+    B.write("%d %.4f %+.4f\n"%(line,thislog,thislog-lastlog))
+  lastlog=thislog
   line=1+line
   u=sigma(f)-uu
  else:
