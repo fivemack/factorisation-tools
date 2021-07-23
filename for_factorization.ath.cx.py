@@ -8,7 +8,7 @@ def ModExp (Base, Exp, Mod):
   Factor = Base 
   while X > 0 :
     Remainder = X % 2 
-    X = X / 2 
+    X = X // 2 
     if Remainder == 1: 
       Hash = Hash * Factor % Mod 
     Factor = Factor * Factor % Mod
@@ -30,7 +30,7 @@ def product(l):
 def usum(p,e):
 # usum(p,1)=p+1
 # usum(p,2)=p**2+p+1
-  return (p**(e+1)-1)/(p-1)
+  return (p**(e+1)-1)//(p-1)
 
 def sigma(e):
   if (len(e) == 1):
@@ -55,7 +55,7 @@ for v in A:
  if (IsPrime(pp)):
   smallp = smallp + [int(v)]
  else:
-  print "AARGH composite ",pp
+  print("AARGH composite ",pp)
   die
 smallp.sort()
 while (2 != 3):
@@ -66,7 +66,7 @@ while (2 != 3):
    ex=0
    while (u%p==0):
     ex=1+ex
-    u=u/p
+    u=u//p
    f=f+[[p,ex]]
  if (IsPrime(u)):
   f=f+[[u,1]]
@@ -80,8 +80,7 @@ while (2 != 3):
     uf = uf + str(v[0]) + "^" + str(v[1]) + "*"
   uf = uf[:-1]
   C.write(str(uu)+"="+uf+"\n")
-  B.write(str(line)+" "+str(log(uu)/log(10))+"\n")
-#  print line,uu,log(uu)/log(10),f
+  thislog=log(uu)/log(10)
   line=1+line
   u=sigma(f)-uu
  else:
