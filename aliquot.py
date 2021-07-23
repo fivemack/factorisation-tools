@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from math import log,exp
 import os
@@ -9,7 +9,7 @@ from tempfile import mkdtemp
 from datetime import datetime,timedelta
 
 machine = os.uname()[1]
-print machine
+print(machine)
 PROG_ECM="/home/nfsworld/B/bin-i7/bin/ecm"
 if (machine == "pig" or machine == "tractor"):
   PROG_ECM="/home/nfsworld/B/bin-phenom/bin/ecm"
@@ -34,23 +34,23 @@ else:
   PROJNAME=sys.argv[1]
 
 def lastQ(fn):
- A=open(fn,"r")
+ A=open(fn,"rb")
  A.seek(-1000,os.SEEK_END)
  lines=A.readlines()[1:-2]
- ends=[int(u.split(",")[-1],16) for u in lines]
+ ends=[int(u.decode("utf-8").split(",")[-1],16) for u in lines]
  ed={};edi={}
  for t in ends:
   if (t in ed):
    ed[t]=1+ed[t]
   else:
    ed[t]=1
- for (k, v) in ed.iteritems():
+ for (k, v) in ed.items():
   edi[v]=k
  return edi[max(edi.keys())]
 
 def PopulateECMcache():
  if (os.path.exists(PROJNAME+".ecm.cache")):
-  A=open(PROJNAME+".ecm.cache")
+  A=open(PROJNAME+".ecm.cache","r")
   for line in A:
    S=line.split(' ')
    ECMdone[int(S[0])]=float(S[1])
@@ -84,7 +84,7 @@ def GuessGNFStime(N):
  return exp(0.113*n-1.8)
 
 def TrySomeECM(N):
- print "Trying ECM on ",N," for the ",ECMdone[N],"th time"
+ print("Trying ECM on %s for the %.1fth time" % (N,ECMdone[N]))
  if (ECMdone[N] < 10): lim=10000
  else: 
   if (ECMdone[N] < 100): lim=30000
@@ -101,11 +101,11 @@ def TrySomeECM(N):
  process1 = Popen(["echo",str(N)], stdout=PIPE)
  cmdline = [PROG_ECM,"-q","-c","1",str(lim)]
  process2 = Popen(cmdline, stdin=process1.stdout, stdout=PIPE)
- output = process2.communicate()[0][:-1]
+ output = process2.communicate()[0][:-1].decode("utf-8")
  if (output == str(N)):
   return []
  else:
-  print "SUCCESS ",output
+  print("SUCCESS ",output)
   factors = output.split(' ')
   Z=[]
   for u in factors:
@@ -121,7 +121,7 @@ def Factors(N):
  if (log(N)/log(10) < 50):
   return FactorsByMsieve(N)
  else:
-  print "C"+str(int(log(N)/log(10)+1)),N," is quite big"
+  print("C"+str(int(log(N)/log(10)+1)),N," is quite big")
   if (N not in ECMdone):
    ECMdone[N]=0
 
@@ -134,20 +134,20 @@ def Factors(N):
    ecmlimit = ecmlimit_n
   if (ecmlimit > ecmlimit_all):
    ecmlimit=ecmlimit_all
-  print "Trying up to",ecmlimit,"curves on",N
+  print("Trying up to",ecmlimit,"curves on",N)
   if (ECMdone[N] < ecmlimit):
    return TrySomeECM(N)
   else:
    if (log(N)/log(10) < 85):
-    print "Factoring by msieve anyway ..."
+    print("Factoring by msieve anyway ...")
     return FactorsByMsieve(N)
    else:
-    print "GNFS probably faster"
+    print("GNFS probably faster")
     return FactorsByGNFS(N)
 
 def FactorsByFactor(N):
  cmdline = ["factor",str(N)];
- u = Popen(cmdline,stdout=PIPE).communicate()[0]
+ u = Popen(cmdline,stdout=PIPE).communicate().decode("utf-8")[0]
  u = u[:-1].split(' ')
  return [int(v) for v in u[1:]]
 
@@ -155,7 +155,7 @@ def FactorsByMsieve(N):
  fs = []
  cmdline = [PROG_MSIEVE,"-v",str(N)];
  msieve_wd = mkdtemp()
- aus = Popen(cmdline,cwd=msieve_wd,stdout=PIPE).communicate()[0].split('\n')
+ aus = Popen(cmdline,cwd=msieve_wd,stdout=PIPE).communicate()[0].decode("utf-8").split('\n')
  for line in aus:
   K = line.find("factor: ")
   if (K != -1):
@@ -168,7 +168,7 @@ def FactorsByGNFS(N):
  dname = "gnfs."+str(N)
  ndig = log(N)/log(10)
  if (ndig > nfslimit):
-  print "Command-line tells me not to run NFS on numbers this big"
+  print("Command-line tells me not to run NFS on numbers this big")
   sys.exit(0)
  if (ndig < 87):
   fblim=300000
@@ -211,18 +211,18 @@ def FactorsByGNFS(N):
   siever = "14"
   fblim = 15000000
  if (ndig > 145):
-  print "Not prepared to pick parameters automatically at this level"
+  print("Not prepared to pick parameters automatically at this level")
   sys.exit(7)
 
  if (not os.path.exists(dname)):
   os.mkdir(dname);
  if (not os.path.exists(dname+"/msieve.fb")):
-  print "Running polynomial selection for ",N
+  print("Running polynomial selection for ",N)
   D=open(dname+"/worktodo.ini","w")
   D.write(str(N)+"\n")
   D.close()
   cmdline = [PROG_MSIEVE,"-v","-np"];
-  aus = Popen(cmdline,cwd=dname,stdout=PIPE).communicate()[0].split('\n')
+  aus = Popen(cmdline,cwd=dname,stdout=PIPE).communicate()[0].decode("utf-8").split('\n')
  if (not os.path.exists(dname+"/gnfs")):
   lines = {}
   C=open(dname+"/msieve.fb")
@@ -267,20 +267,20 @@ def FactorsByGNFS(N):
  if (lp == 28):
   target_yield = 22000000
  if (target_yield == -1):
-  print "lp ",lp," not suitable"
+  print("lp ",lp," not suitable")
   sys.exit(8)
- print "Initial yield estimate"
+ print("Initial yield estimate")
  # sample more widely when the run will take longer
  # tendency otherwise to get embarrassingly high or low
  iye_range = 1000
  if (lp > 24):
   iye_range = 10000
  if (not os.path.exists(dname+"/e1")):
-  print "Sampling a little around Q =",Q0
+  print("Sampling a little around Q =",Q0)
   cmdline = [PROG_GNFSDIR+"/gnfs-lasieve4I"+siever+"e","-o","e0","-a","gnfs","-f",str(Q0),"-c",str(iye_range)]
-  aus = Popen(cmdline,cwd=dname,stdout=PIPE,stderr=PIPE).communicate()[1].split("\r")
+  aus = Popen(cmdline,cwd=dname,stdout=PIPE,stderr=PIPE).communicate()[1].decode("utf-8").split("\r")
   D=open(dname+"/e1","w")
-  print aus
+  print(aus)
   D.write(aus[-1])
   D.close()
  E=open(dname+"/e1")
@@ -288,7 +288,7 @@ def FactorsByGNFS(N):
  terms=line.split()
  ypq=int(terms[2][:-1])/float(iye_range)
  tpr=float(terms[4][1:])
- print ypq,tpr,target_yield/ypq, target_yield*tpr
+ print(ypq,tpr,target_yield/ypq, target_yield*tpr)
 
  if (os.path.exists(dname+"/tosieve")):
   # get the parameters from tosieve
@@ -300,9 +300,9 @@ def FactorsByGNFS(N):
  else:
   nq = target_yield/ypq
   if (nq > Q0):
-   q0 = Q0/2
+   q0 = Q0//2
   else:
-   q0 = Q0 - nq/2
+   q0 = Q0 - nq//2
   q0 = 10000*int(q0/10000)
   nq = 10000*int((nq/10000)+1)
   E = open(dname+"/segments","w")
@@ -318,38 +318,38 @@ def FactorsByGNFS(N):
  if (os.path.exists(dname+"/"+rname)):
   scmdline = scmdline + ["-R"]
   complete = (lastQ(dname+"/"+rname)-q0)/(nq+0.0)
-  print "Resuming job, about ",'%4.1f'%(complete*100),"% complete"
+  print("Resuming job, about ",'%4.1f'%(complete*100),"% complete")
   eta_seconds = eta_seconds * (1-complete)
- print "Time is ",datetime.now().strftime("%d %B %Y %H:%M:%S")
+ print("Time is ",datetime.now().strftime("%d %B %Y %H:%M:%S"))
  etas = (datetime.now()+timedelta(eta_seconds/86400)).strftime("%d %B %Y %H:%M:%S")
- print "Sieving",nq,"Q starting at",q0," ETA is ",etas
+ print("Sieving",nq,"Q starting at",q0," ETA is ",etas)
  aus = Popen(scmdline,cwd=dname,stdout=PIPE,stderr=PIPE).communicate()[1]
  os.remove(dname+"/tosieve")
  E = open(dname+"/w"+rname,"a")
- E.write(aus)
+ E.write(aus.decode("utf-8"))
  E.close()
 
- print "Sieving completed; building msieve.dat"
+ print("Sieving completed; building msieve.dat")
  # make msieve.dat out of rels
  A = open(dname+"/msieve.dat","w")
  A.write("N "+str(N)+"\n")
  sn = "rels"
  while (os.path.exists(dname+"/"+sn)):
-  print "merging in",sn
+  print("merging in",sn)
   B = open(dname+"/"+sn)
   for line in B:
    A.write(line)
   B.close()
   sn = sn+"."
  A.close()
- print "msieve.dat built; calling msieve"
+ print("msieve.dat built; calling msieve")
  cmdline = [PROG_MSIEVE,"-v","-nc"];
  if (not(os.path.exists(dname+"/worktodo.ini"))):
   D=open(dname+"/worktodo.ini","w")
   D.write(str(N)+"\n")
   D.close()
- ausx = Popen(cmdline,cwd=dname,stdout=PIPE).communicate()[0].split("\n")
- print ausx
+ ausx = Popen(cmdline,cwd=dname,stdout=PIPE).communicate()[0].decode("utf-8").split("\n")
+ print(ausx)
 
  # and finally list the factors
  fs = []
@@ -362,7 +362,7 @@ def FactorsByGNFS(N):
   return fs
 
  # Umm.  If we get here, there weren't enough factors
- print "msieve didn't finish; not enough relations"
+ print("msieve didn't finish; not enough relations")
  E = open(dname+"/segments")
  qq = [int(t) for t in E.readline().split()]
  E.close()
@@ -396,7 +396,7 @@ def ModExp (Base, Exp, Mod):
   Factor = Base 
   while X > 0 :
     Remainder = X % 2 
-    X = X / 2 
+    X = X // 2 
     if Remainder == 1: 
       Hash = Hash * Factor % Mod 
     Factor = Factor * Factor % Mod
@@ -418,7 +418,7 @@ def product(l):
 def usum(p,e):
 # usum(p,1)=p+1
 # usum(p,2)=p**2+p+1
-  return (p**(e+1)-1)/(p-1)
+  return (p**(e+1)-1)//(p-1)
 
 def sigma(e):
   if (len(e) == 1):
@@ -446,8 +446,8 @@ for v in A:
  if (IsPrime(pp)):
   smallp = smallp + [int(v)]
  else:
-  print "AARGH composite ",pp
-  die
+  print("AARGH composite ",pp)
+  sys.exit(1)
 smallp.sort()
 while (log(u)<limit*log(10)):
  f = []
@@ -457,18 +457,18 @@ while (log(u)<limit*log(10)):
    ex=0
    while (u%p==0):
     ex=1+ex
-    u=u/p
+    u=u//p
    f=f+[[p,ex]]
  if (IsPrime(u)):
-  print "P",u
+  print("P",u)
   f=f+[[u,1]]
   u=1
  if (u==1):
-  print line,uu,log(uu)/log(10),f
+  print(line,uu,log(uu)/log(10),f)
   line=1+line
   u=sigma(f)-uu
  else:
-  print "C"+str(int(log(u)/log(10)+1.0))+" cofactor ",u
+  print("C"+str(int(log(u)/log(10)+1.0))+" cofactor ",u)
   F = Factors(u)
   smallp = smallp + F
   CacheFactors(F,PROJNAME)
