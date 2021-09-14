@@ -85,7 +85,7 @@ for my $j (@nfspids)
 	if ($u eq "-f") {$startQ = $cmdline[$ui+1];}
 	if ($u eq "-c") {$endQ = $cmdline[$ui+1]+$startQ;}
     }
-    for my $lsofline (split "\n",`lsof -p $j`)
+    for my $lsofline (split "\n",`lsof -p $j 2>/dev/null`)
      {
  	my @fields = split " ",$lsofline;
 	if ($fields[3] eq "cwd") { $pn = $fields[8]."/".$pn; push @{$runs{$pn}},$j;}
