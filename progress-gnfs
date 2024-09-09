@@ -2,7 +2,7 @@
 
 # Run in a directory which has msieve.fb, worktodo.ini and some *lasieve*
 
-import os,glob,re,shutil,subprocess,itertools,sys
+import os,glob,re,shutil,subprocess,itertools,sys,time
 
 project_name="wibble"
 np = 28
@@ -11,6 +11,8 @@ np = 28
 
 GNFS_SIEVER="/home/nfsworld/gnfs-batalov/gnfs-lasieve4I13e"
 MSIEVE_EXE="/home/nfsworld/msieve"
+MSIEVE_GPU_PATH="/home/nfsworld/modern-gpu-msieve/msieve_nfsathome"
+MSIEVE_GPU_EXE=MSIEVE_GPU_PATH+"/msieve"
 
 def build_msievedotdat():
     md=open(scratch_dir_name+"/msieve.dat","w")
@@ -52,6 +54,9 @@ for u in extant_files:
     
 print([q_block, q_first, q_last])
 
+if (q_block==None or q_first==None or q_last==None):
+    raise SystemExit("cannot figure out what GNFS has already been done")
+
 if (len(extant_files)<100 or q_block > 250000):
     q_block = 10000
 
@@ -71,9 +76,9 @@ while (matrix_built == False):
     processes[0] = subprocess.Popen(mm, stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=scratch_dir_name)
     print("Launched msieve", file=sys.stderr)
     for i in range(1,np):
-        sm=[GNFS_SIEVER, ['-a','-r'][side], 'gnfs', '-f', str(q_last+i*q_block), '-c' , str(q_block)]
+        sm=[GNFS_SIEVER, ['-a','-r'][side], 'gnfs', '-f', str(q_last+(i-1)*q_block), '-c' , str(q_block)]
         processes[i] = subprocess.Popen(sm, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        print("Launched siever %s .. +%s" % (q_last+i*q_block, q_block), file=sys.stderr)
+        print("Launched siever %s .. +%s" % (q_last+(i-1)*q_block, q_block), file=sys.stderr)
 
     t0 = time.time()
         
@@ -84,30 +89,29 @@ while (matrix_built == False):
 
     print("msieve finished in %s" % (tm-t0), file=sys.stderr)
     # And wait for all the other processes to finish
-    completed_sieves = 0
-    while completed_sieves != n_sieves:
-        print("%s/%s", completed_sieves, n_sieves)
-        print(processes)
-        for j in processes[1:]:
-            try:
-                j.communicate(timeout=0.1)
-            except subprocess.TimeoutExpired:
-                tof=1+tof
-            if (j.returncode!=None):
-                completed_sieves += 1
-        time.sleep(10)
+    for j in processes[1:]:
+        j.wait()
+
     ts = time.time()
     print("sievers finished in %s" % (ts-t0))
     if (ts-t0 < tm-t0+60):
         print("msieve took longer than sievers; sieve further!") 
         q_block = 2*q_block
 
-    if (glob(scratch_dir_name+"/msieve.dat.cyc") != []):
+    if (glob.glob(scratch_dir_name+"/msieve.dat.cyc") != []):
         matrix_built = True
     else:
         q_last += n_sieves*q_block
 
 # we built a matrix and did sieving last time, so redo the concatenation because we now have more relations
 build_msievedotdat()
+
+for u in ["lanczos_kernel","stage1_core"]:
+    shutil.copy2(MSIEVE_GPU_PATH+"/"+u+".ptx",scratch_dir_name)
+scratch_dir_cub=scratch_dir_name+"/cub"
+os.makedirs(scratch_dir_cub)
+for u in ["sort","spmv"]:
+    shutil.copy2(MSIEVE_GPU_PATH+"/cub/"+u+"_engine.so",scratch_dir_cub)
+
 mm=[MSIEVE_GPU_EXE,'-g','0','-nc']
 subprocess.run(mm, cwd=scratch_dir_name)
