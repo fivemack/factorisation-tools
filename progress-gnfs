@@ -1,0 +1,113 @@
+#!/usr/bin/python3
+
+# Run in a directory which has msieve.fb, worktodo.ini and some *lasieve*
+
+import os,glob,re,shutil,subprocess,itertools,sys
+
+project_name="wibble"
+np = 28
+
+
+
+GNFS_SIEVER="/home/nfsworld/gnfs-batalov/gnfs-lasieve4I13e"
+MSIEVE_EXE="/home/nfsworld/msieve"
+
+def build_msievedotdat():
+    md=open(scratch_dir_name+"/msieve.dat","w")
+    extant_files=glob.glob("gnfs.lasieve*")
+    n=len(extant_files);ct=0;
+    print("Concatenating files ...",file=sys.stderr)
+    for f in extant_files:
+        print("[%s/%s]\r" % (ct,n),end='',file=sys.stderr,flush=True)
+        with open(f,"r") as ff:
+            md.writelines(ff)
+            ct=1+ct
+
+
+
+ct=0
+success=False
+while (success == False):
+    scratch_dir_name = "/scratch/auto-"+str(ct)+"-"+project_name
+    try:
+        os.makedirs(scratch_dir_name, exist_ok=False)
+        success=True
+    except:
+        ct=1+ct
+
+q_block=None
+q_first=None
+q_last=None
+
+extant_files=glob.glob("gnfs.lasieve*")
+for u in extant_files:
+    m=re.match(r'.*lasieve-(.)\.([0-9]+)-([0-9]+)',u)
+    (side,start,end)=(int(m.group(1)),int(m.group(2)),int(m.group(3)))
+#    print([side,start,end])
+    q_block = end-start
+    if (q_first == None or start<q_first):
+        q_first = start
+    if (q_last == None or end>q_last):
+        q_last = end
+    
+print([q_block, q_first, q_last])
+
+if (len(extant_files)<100 or q_block > 250000):
+    q_block = 10000
+
+shutil.copy2("msieve.fb",scratch_dir_name)
+shutil.copy2("worktodo.ini",scratch_dir_name)
+
+matrix_built = False
+
+while (matrix_built == False):
+
+    build_msievedotdat()
+    
+    processes = [[] for t in range(np)]
+    n_sieves = np-1
+
+    mm=[MSIEVE_EXE, '-v', '-nc1']
+    processes[0] = subprocess.Popen(mm, stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=scratch_dir_name)
+    print("Launched msieve", file=sys.stderr)
+    for i in range(1,np):
+        sm=[GNFS_SIEVER, ['-a','-r'][side], 'gnfs', '-f', str(q_last+i*q_block), '-c' , str(q_block)]
+        processes[i] = subprocess.Popen(sm, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        print("Launched siever %s .. +%s" % (q_last+i*q_block, q_block), file=sys.stderr)
+
+    t0 = time.time()
+        
+    # so the msieve and the sievers are now all running
+    # Wait for msieve to finish
+    processes[0].wait()
+    tm = time.time()
+
+    print("msieve finished in %s" % (tm-t0), file=sys.stderr)
+    # And wait for all the other processes to finish
+    completed_sieves = 0
+    while completed_sieves != n_sieves:
+        print("%s/%s", completed_sieves, n_sieves)
+        print(processes)
+        for j in processes[1:]:
+            try:
+                j.communicate(timeout=0.1)
+            except subprocess.TimeoutExpired:
+                tof=1+tof
+            if (j.returncode!=None):
+                completed_sieves += 1
+        time.sleep(10)
+    ts = time.time()
+    print("sievers finished in %s" % (ts-t0))
+    if (ts-t0 < tm-t0+60):
+        print("msieve took longer than sievers; sieve further!") 
+        q_block = 2*q_block
+
+    if (glob(scratch_dir_name+"/msieve.dat.cyc") != []):
+        matrix_built = True
+    else:
+        q_last += n_sieves*q_block
+
+# we built a matrix and did sieving last time, so redo the concatenation because we now have more relations
+build_msievedotdat()
+mm=[MSIEVE_GPU_EXE,'-g','0','-nc']
+subprocess.run(mm, cwd=scratch_dir_name)
