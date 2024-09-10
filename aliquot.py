@@ -13,13 +13,16 @@ print(machine)
 PROG_ECM="/home/nfsworld/B/bin-i7/bin/ecm"
 if (machine == "pig" or machine == "tractor"):
   PROG_ECM="/home/nfsworld/B/bin-phenom/bin/ecm"
-PROG_MSIEVE="/home/nfsworld/msieve-svn/trunk/msieve"
+if (machine == "butternut" or machine == "oak"):
+  PROG_ECM="/home/nfsworld/ecm71-gmp61/exe-HSW/ecm"
+if (machine == "pumpkin"):
+  PROG_ECM="/home/nfsworld/ecm71-gmp61/exe-IVB/bin/ecm"
+PROG_MSIEVE="/home/nfsworld/msieve"
 PROG_GNFSDIR="/home/nfsworld/gnfs-batalov"
 
-if (machine == "butternut"):
-  PROG_ECM="/home/nfsworld/ecm71-gmp61/exe-HSW/ecm"
-  PROG_MSIEVE="/home/nfsworld/msieve"
 
+if (machine == "oak"):
+  PROG_MSIEVE="/home/nfsworld/msieve-svn-20190823-gmpfix/msieve-MP-V256-SKL"
 
 limit = 200
 nfslimit = 138
