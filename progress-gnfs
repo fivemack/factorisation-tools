@@ -88,7 +88,7 @@ while (matrix_built == False):
     print("Launched msieve", file=sys.stderr)
     for i in range(1,np):
         sm=[GNFS_SIEVER, ['-a','-r'][side], 'gnfs', '-f', str(q_last+(i-1)*q_block), '-c' , str(q_block)]
-        processes[i] = subprocess.Popen(sm, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        processes[i] = subprocess.Popen(sm, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print("Launched siever %s .. +%s" % (q_last+(i-1)*q_block, q_block), file=sys.stderr)
 
     t0 = time.time()
@@ -98,13 +98,13 @@ while (matrix_built == False):
     processes[0].wait()
     tm = time.time()
 
-    print("msieve finished in %s" % (tm-t0), file=sys.stderr)
+    print("msieve finished in %.1f" % (tm-t0), file=sys.stderr)
     # And wait for all the other processes to finish
     for j in processes[1:]:
         j.wait()
 
     ts = time.time()
-    print("sievers finished in %s" % (ts-t0))
+    print("sievers finished in %.1f" % (ts-t0))
     if (ts-t0 < tm-t0+60):
         print("msieve took longer than sievers; sieve further!") 
         q_block = 2*q_block
