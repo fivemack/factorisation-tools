@@ -2,14 +2,25 @@
 
 # Run in a directory which has msieve.fb, worktodo.ini and some *lasieve*
 
-import os,glob,re,shutil,subprocess,itertools,sys,time
+import os,glob,re,shutil,subprocess,itertools,sys,time,argparse
 
-project_name="wibble"
-np = 28
+parser = argparse.ArgumentParser(prog='progress-gnfs',
+                                 description='Run more sieving over multiple threads until GNFS filtering generates a matrix',
+                                 epilog='')
 
+parser.add_argument('-s', type=int, default=13, help='Which lasieve4I to use')
+parser.add_argument('-p', type=str, default="wibble", help='Project name (used for naming tempdir)')
+parser.add_argument('-np', type=str, default=28, help='Number of processes to use (at least two)')
 
+pa=parser.parse_args()
 
-GNFS_SIEVER="/home/nfsworld/gnfs-batalov/gnfs-lasieve4I13e"
+siever=pa.s
+project_name=pa.p
+np = pa.np
+
+print([siever, project_name, np])
+
+GNFS_SIEVER="/home/nfsworld/gnfs-batalov/gnfs-lasieve4I"+str(siever)+"e"
 MSIEVE_EXE="/home/nfsworld/msieve"
 MSIEVE_GPU_PATH="/home/nfsworld/modern-gpu-msieve/msieve_nfsathome"
 MSIEVE_GPU_EXE=MSIEVE_GPU_PATH+"/msieve"
