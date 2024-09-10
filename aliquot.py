@@ -128,7 +128,7 @@ def Factors(N):
   if (N not in ECMdone):
    ECMdone[N]=0
 
-  ecmlimit_all = int(GuessGNFStime(10**135)/GuessECMtime(10**135))/2
+  ecmlimit_all = int(GuessGNFStime(10**nfslimit)/GuessECMtime(10**nfslimit))/2
 
   ecmlimit_m = int(GuessMSIEVEtime(N)/GuessECMtime(N))/2
   ecmlimit_n = int(GuessGNFStime(N)/GuessECMtime(N))/2
@@ -171,7 +171,7 @@ def FactorsByGNFS(N):
  dname = "gnfs."+str(N)
  ndig = log(N)/log(10)
  if (ndig > nfslimit):
-  print("Command-line tells me not to run NFS on numbers this big")
+  print(f"Command-line tells me not to run NFS on numbers above {nfslimit} digits")
   sys.exit(0)
  if (ndig < 87):
   fblim=300000
