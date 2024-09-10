@@ -1,5 +1,17 @@
 #!/usr/bin/perl
 
+my $binary = "/home/nfsworld/msieve";
+open A, "< /proc/cpuinfo";
+my ($ht,$ncpu)=(1,0);
+while (<A>)
+{
+    if (/Intel/) { $ht = 2; }
+    if (/MHz/) { $ncpu++; }
+    if (/avx512f/) { $binary = "/home/nfsworld/msieve-svn-20190823/msieve-MP-V256-SKL"; }
+}
+
+$ncpu /= $ht;
+
 sub worked($)
 {
     my ($density) = @_;
@@ -8,7 +20,7 @@ sub worked($)
     if (-e "msieve.dat.cyc.$density") { return 1; }
 
     my @ml;
-    system "/home/nfsworld/msieve -v -nc1 target_density=$density";
+    system "$binary -v -nc1 target_density=$density";
     open K,"< msieve.log";
     while (<K>)
     {
@@ -59,18 +71,6 @@ if ($mprime_pid ne "")
 {
     $cmd = "killall -STOP mprime; ";
 }
-
-my $binary = "/home/nfsworld/msieve";
-open A, "< /proc/cpuinfo";
-my ($ht,$ncpu)=(1,0);
-while (<A>)
-{
-    if (/Intel/) { $ht = 2; }
-    if (/MHz/) { $ncpu++; }
-    if (/avx512f/) { $binary = "/home/nfsworld/msieve-svn-20190823/msieve-MP-V256-SKL"; }
-}
-
-$ncpu /= $ht;
 
 $cmd .= "taskset -c 0-".($ncpu-1)." $binary -v -nc2 -t ".$ncpu."; ";
 if ($mprime_pid ne "")
