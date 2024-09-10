@@ -8,6 +8,14 @@ from subprocess import Popen,PIPE
 from tempfile import mkdtemp
 from datetime import datetime,timedelta
 
+def human_readable(n):
+# TODO negative inputs
+  if (n<1000): return "%.1f"%n
+  if (n<1000000): return "%.1fk"%(n/1000)
+  if (n<1000000000): return "%.1fM"%(n/1e6)
+  if (n<1000000000000): return "%.1fG"%(n/1e9)
+  return "%.2e"%n
+
 machine = os.uname()[1]
 print(machine)
 PROG_ECM="/home/nfsworld/B/bin-i7/bin/ecm"
@@ -108,7 +116,7 @@ def TrySomeECM(N):
          else:
 #           if (ECMdone[N] < 51200000):
              lim=100000000
- print("Trying ECM (%s) on %s for the %.1fth time" % (lim, N,ECMdone[N]))
+ print("Trying ECM (%s) on %s for the %sth time" % (human_readable(lim), N, human_readable(ECMdone[N])))
  ECMdone[N] = (5120*lim/100000.0)+ECMdone[N]
  UpdateECMcache()
  process1 = Popen(["echo",str(N)], stdout=PIPE)
@@ -147,7 +155,7 @@ def Factors(N):
    ecmlimit = ecmlimit_n
   if (ecmlimit > ecmlimit_all):
    ecmlimit=ecmlimit_all
-  print("Trying up to",ecmlimit,"curves on",N)
+  print("Trying up to",human_readable(ecmlimit),"equivalent 1e5 curves on",N)
   if (ECMdone[N] < ecmlimit):
    return TrySomeECM(N)
   else:
