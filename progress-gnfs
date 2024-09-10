@@ -126,3 +126,4 @@ for u in ["sort","spmv"]:
 
 mm=[MSIEVE_GPU_EXE,'-g','0','-nc']
 subprocess.run(mm, cwd=scratch_dir_name)
+shutil.copy2(scratch_dir_name+"/msieve.log","msieve.log")
