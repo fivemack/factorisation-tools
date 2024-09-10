@@ -147,7 +147,7 @@ def Factors(N):
 
 def FactorsByFactor(N):
  cmdline = ["factor",str(N)];
- u = Popen(cmdline,stdout=PIPE).communicate().decode("utf-8")[0]
+ u = Popen(cmdline,stdout=PIPE).communicate()[0].decode("utf-8")
  u = u[:-1].split(' ')
  return [int(v) for v in u[1:]]
 
