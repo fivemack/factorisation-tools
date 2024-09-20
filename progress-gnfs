@@ -62,7 +62,7 @@ for u in extant_files:
         q_first = start
     if (q_last == None or end>q_last):
         q_last = end
-    
+
 print([q_block, q_first, q_last])
 
 if (q_block==None or q_first==None or q_last==None):
@@ -79,7 +79,7 @@ matrix_built = False
 while (matrix_built == False):
 
     build_msievedotdat()
-    
+
     processes = [[] for t in range(np)]
     n_sieves = np-1
 
@@ -92,7 +92,7 @@ while (matrix_built == False):
         print("Launched siever %s .. +%s" % (q_last+(i-1)*q_block, q_block), file=sys.stderr)
 
     t0 = time.time()
-        
+
     # so the msieve and the sievers are now all running
     # Wait for msieve to finish
     processes[0].wait()
@@ -105,14 +105,15 @@ while (matrix_built == False):
 
     ts = time.time()
     print("sievers finished in %.1f" % (ts-t0))
-    if (ts-t0 < tm-t0+60):
-        print("msieve took longer than sievers; sieve further!") 
-        q_block = 2*q_block
 
     if (glob.glob(scratch_dir_name+"/msieve.dat.cyc") != []):
         matrix_built = True
     else:
         q_last += n_sieves*q_block
+
+    if (ts-t0 < tm-t0+60):
+      print("msieve took longer than sievers; sieve further!")
+      q_block = 2*q_block
 
 # we built a matrix and did sieving last time, so redo the concatenation because we now have more relations
 build_msievedotdat()
