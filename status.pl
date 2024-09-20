@@ -20,7 +20,8 @@ sub read_ecmcache($)
 sub summ($)
 {
     my ($n) = @_;
-    return "C".(1+(int(log($n)/log(10))));
+    my $ll = log($n)/log(10);
+    return "C".(1+int($ll)).".".substr($n,0,3);
 }
 
 my @ms = split "\n",`ps \$(pidof msieve)`; my @mx;
