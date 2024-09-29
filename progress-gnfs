@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(prog='progress-gnfs',
 
 parser.add_argument('-s', type=int, default=13, help='Which lasieve4I to use')
 parser.add_argument('-p', type=str, default="wibble", help='Project name (used for naming tempdir)')
-parser.add_argument('-np', type=str, default=28, help='Number of processes to use (at least two)')
+parser.add_argument('-np', type=int, default=28, help='Number of processes to use (at least two)')
 
 pa=parser.parse_args()
 
