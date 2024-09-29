@@ -36,7 +36,43 @@ def build_msievedotdat():
             md.writelines(ff)
             ct=1+ct
 
+def summarise_msievedotlog(fn):
+    f=open(fn,"r")
+    raw_relations=None
+    uniq_relations=None
+    ideals_count=None
+    reduce_to=[0,0]
+    free_relations=None
+    for line in f:
+        # reset at the start of each output stanza
+        m = re.match(r'.*random seeds:', line)
+        if (m != None):
+            raw_relations = None
+            uniq_relations = None
+            ideals_count = None
+            reduce_to = None
+        m = re.match(r'.*found ([0-9]+) duplicates and ([0-9]+) unique relations',line)
+        if (m != None and uniq_relations == None):
+            uniq_relations = int(m.group(2))
+        m = re.match(r'.*found ([0-9]+) hash collisions in ([0-9]+) relations',line)
+        if (m != None and raw_relations == None):
+            raw_relations = int(m.group(2))
+        m = re.match(r'.*begin with ([0-9]+) relations and ([0-9]+) unique ideals',line)
+        if (m != None and ideals_count == None):
+            ideals_count = int(m.group(2))
+        # we want the *last* reduce-to
+        m = re.match(r'.*reduce to ([0-9]+) relations and ([0-9]+) ideals in.*',line)
+        if (m != None):
+            reduce_to = [int(m.group(1)), int(m.group(2))]
+        # unless it actually concluded, in which case use that instead
+        m = re.match(r'.*reduce to ([0-9]+) relation sets and ([0-9]+) unique ideals',line)
+        if (m != None):
+            reduce_to = [int(m.group(1)), int(m.group(2))]
+        m = re.match(r'.*added ([0-9]+) free relations',line)
+        if (m != None):
+            free_relations = int(m.group(1))
 
+    return("%s raw relations of which %s unique; %s ideals; reduced to %s" % (raw_relations, uniq_relations-free_relations, ideals_count, reduce_to))
 
 ct=0
 success=False
@@ -98,13 +134,13 @@ while (matrix_built == False):
     processes[0].wait()
     tm = time.time()
 
-    print("msieve finished in %.1f" % (tm-t0), file=sys.stderr)
+    print("msieve finished in %.1f s: %s" % (tm-t0, summarise_msievedotlog(scratch_dir_name+"/msieve.log")), file=sys.stderr)
     # And wait for all the other processes to finish
     for j in processes[1:]:
         j.wait()
 
     ts = time.time()
-    print("sievers finished in %.1f" % (ts-t0))
+    print("sievers finished in %.1f s" % (ts-t0))
 
     if (glob.glob(scratch_dir_name+"/msieve.dat.cyc") != []):
         matrix_built = True
