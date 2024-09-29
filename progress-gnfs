@@ -154,13 +154,18 @@ while (matrix_built == False):
 # we built a matrix and did sieving last time, so redo the concatenation because we now have more relations
 build_msievedotdat()
 
-for u in ["lanczos_kernel","stage1_core"]:
-    shutil.copy2(MSIEVE_GPU_PATH+"/"+u+".ptx",scratch_dir_name)
-scratch_dir_cub=scratch_dir_name+"/cub"
-os.makedirs(scratch_dir_cub)
-for u in ["sort","spmv"]:
-    shutil.copy2(MSIEVE_GPU_PATH+"/cub/"+u+"_engine.so",scratch_dir_cub)
+# do we have a GPU?
+smi = subprocess.run(["nvidia-smi"])
+if (smi.returncode == 0):
+    for u in ["lanczos_kernel","stage1_core"]:
+        shutil.copy2(MSIEVE_GPU_PATH+"/"+u+".ptx",scratch_dir_name)
+    scratch_dir_cub=scratch_dir_name+"/cub"
+    os.makedirs(scratch_dir_cub)
+    for u in ["sort","spmv"]:
+        shutil.copy2(MSIEVE_GPU_PATH+"/cub/"+u+"_engine.so",scratch_dir_cub)
 
-mm=[MSIEVE_GPU_EXE,'-g','0','-nc']
+    mm=[MSIEVE_GPU_EXE,'-g','0','-nc']
+else:
+    mm=[MSIEVE_EXE,'-nc','-t',str(np/2)]
 subprocess.run(mm, cwd=scratch_dir_name)
 shutil.copy2(scratch_dir_name+"/msieve.log","msieve.log")
