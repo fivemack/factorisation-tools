@@ -71,8 +71,11 @@ def summarise_msievedotlog(fn):
         m = re.match(r'.*added ([0-9]+) free relations',line)
         if (m != None):
             free_relations = int(m.group(1))
+    if reduce_to != None:
+        if reduce_to[1]>reduce_to[0]:
+            reduce_to="%s+%s=%s"%(reduce_to[0], reduce_to[1]-reduce_to[0], reduce_to[1])
 
-    return("%s raw relations of which %s unique; %s ideals; reduced to %s" % (raw_relations, uniq_relations-free_relations, ideals_count, reduce_to))
+    return("%s raw relations of which %s unique (%.1f%%); %s ideals; reduced to %s" % (raw_relations, uniq_relations-free_relations, 100.0*(uniq_relations-free_relations)/raw_relations, ideals_count, reduce_to))
 
 ct=0
 success=False
