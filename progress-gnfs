@@ -43,6 +43,7 @@ def summarise_msievedotlog(fn):
     ideals_count=None
     reduce_to=[0,0]
     free_relations=None
+    nearly_done=False
     for line in f:
         # reset at the start of each output stanza
         m = re.match(r'.*random seeds:', line)
@@ -67,6 +68,7 @@ def summarise_msievedotlog(fn):
         # unless it actually concluded, in which case use that instead
         m = re.match(r'.*reduce to ([0-9]+) relation sets and ([0-9]+) unique ideals',line)
         if (m != None):
+            nearly_done = True
             reduce_to = [int(m.group(1)), int(m.group(2))]
         m = re.match(r'.*added ([0-9]+) free relations',line)
         if (m != None):
@@ -75,7 +77,7 @@ def summarise_msievedotlog(fn):
         if reduce_to[1]>reduce_to[0]:
             reduce_to="%s+%s=%s"%(reduce_to[0], reduce_to[1]-reduce_to[0], reduce_to[1])
 
-    return("%s raw relations of which %s unique (%.1f%%); %s ideals; reduced to %s" % (raw_relations, uniq_relations-free_relations, 100.0*(uniq_relations-free_relations)/raw_relations, ideals_count, reduce_to))
+    return ("%s raw relations of which %s unique (%.1f%%); %s ideals; reduced to %s" % (raw_relations, uniq_relations-free_relations, 100.0*(uniq_relations-free_relations)/raw_relations, ideals_count, reduce_to), nearly_done)
 
 ct=0
 success=False
@@ -106,7 +108,7 @@ for u in extant_files:
 q_blocks.sort()
 if (len(q_blocks)>6):
     q_block = q_blocks[len(q_blocks)//2]
-        
+
 print([q_block, q_first, q_last])
 
 if (q_first==None or q_last==None):
@@ -142,7 +144,9 @@ while (matrix_built == False):
     processes[0].wait()
     tm = time.time()
 
-    print("msieve finished in %.1f s: %s" % (tm-t0, summarise_msievedotlog(scratch_dir_name+"/msieve.log")), file=sys.stderr)
+    (summary, nearly_done) = summarise_msievedotlog(scratch_dir_name+"/msieve.log")
+
+    print("msieve finished in %.1f s: %s" % (tm-t0, summary, file=sys.stderr))
     # And wait for all the other processes to finish
     for j in processes[1:]:
         j.wait()
@@ -155,7 +159,7 @@ while (matrix_built == False):
     else:
         q_last += n_sieves*q_block
 
-    if (ts-t0 < tm-t0+60):
+    if (ts-t0 < tm-t0+60 and not nearly_done):
       print("msieve took longer than sievers; sieve further!")
       q_block = 2*q_block
 
