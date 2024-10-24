@@ -90,24 +90,29 @@ while (success == False):
 q_block=None
 q_first=None
 q_last=None
+q_blocks=[]
 
 extant_files=glob.glob("gnfs.lasieve*")
 for u in extant_files:
     m=re.match(r'.*lasieve-(.)\.([0-9]+)-([0-9]+)',u)
     (side,start,end)=(int(m.group(1)),int(m.group(2)),int(m.group(3)))
 #    print([side,start,end])
-    q_block = end-start
+    q_blocks.append(end-start)
     if (q_first == None or start<q_first):
         q_first = start
     if (q_last == None or end>q_last):
         q_last = end
 
+q_blocks.sort()
+if (len(q_blocks)>6):
+    q_block = q_blocks[len(q_blocks)//2]
+        
 print([q_block, q_first, q_last])
 
-if (q_block==None or q_first==None or q_last==None):
+if (q_first==None or q_last==None):
     raise SystemExit("cannot figure out what GNFS has already been done")
 
-if (len(extant_files)<100 or q_block > 250000):
+if (q_block == None):
     q_block = 10000
 
 shutil.copy2("msieve.fb",scratch_dir_name)
