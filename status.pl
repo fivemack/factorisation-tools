@@ -5,15 +5,18 @@ use strict;
 
 sub read_ecmcache($)
 {
+    my ($num, $curves);
     my ($fn) = @_;
     my %t = ();
     open A,"< $fn";
     while (<A>)
     {
 	chomp;
-	my ($num,$curves) = split " ",$_;
-	$t{$num}=$curves;
+	($num,$curves) = split " ",$_;
     }
+    $t{$num}=$curves;
+    $t{"age"}=time - (stat($fn))[9];
+    $t{"num"}=$num;
     return \%t;
 }
 
@@ -49,10 +52,8 @@ for my $u (@terms)
     }
 }
 
-my (%T1,%T2);
+my (%T1);
 for my $u (@realterms) { $T1{$u} = read_ecmcache("$u.ecm.cache"); }
-sleep(60);
-for my $u (@realterms) { $T2{$u} = read_ecmcache("$u.ecm.cache"); }
 
 for my $u (@realterms)
 {
@@ -109,13 +110,14 @@ for my $v (sort {$a <=> $b} @terms)
 	}
     }
 
-    for my $j (keys %{$T1{$v}})
+    if (defined $T1{$v})
     {
-	if (defined $T2{$v}->{$j} && ($T2{$v}->{$j} != $T1{$v}->{$j}))
-	{
-	    print "ECM here on ", summ($j)," (",int($T2{$v}->{$j}),")\n";
-	    $info = 2;
-	}
+	my $j = $T1{$v}->{"num"};
+	if ($T1{$v}->{"age"} < 86400 and $info == 0)
+	    {
+		print "ECM here on ", summ($j)," (",int($T1{$v}->{$j}),") ", ($T1{$v}->{"age"}), "\n";
+		$info = 2;
+	    }
     }
     
     my $dirname = "$v.$xx{$v}";
