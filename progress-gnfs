@@ -146,7 +146,7 @@ while (matrix_built == False):
 
     (summary, nearly_done) = summarise_msievedotlog(scratch_dir_name+"/msieve.log")
 
-    print("msieve finished in %.1f s: %s" % (tm-t0, summary, file=sys.stderr))
+    print("msieve finished in %.1f s: %s" % (tm-t0, summary), file=sys.stderr)
     # And wait for all the other processes to finish
     for j in processes[1:]:
         j.wait()
