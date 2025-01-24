@@ -52,8 +52,11 @@ def lastQ(fn):
  return edi[max(edi.keys())]
 
 def PopulateECMcache():
- if (os.path.exists(PROJNAME+".ecm.cache")):
-  A=open(PROJNAME+".ecm.cache","r")
+ fn=PROJNAME+".ecm.cache"
+ if (os.path.exists(fn) and os.stat(fn).st_size==0):
+   fn=PROJNAME+".ecm.cache2"
+ if (os.path.exists(fn) and os.stat(fn).st_size!=0):
+  A=open(fn,"r")
   for line in A:
    S=line.split(' ')
    ECMdone[int(S[0])]=float(S[1])
