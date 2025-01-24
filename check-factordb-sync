@@ -1,6 +1,12 @@
 #!/bin/bash
 for u in *gpl; do
-    echo $u;
-    tail -n1 $u;
-    curl "http://factordb.com/sequences.php?se=1&aq=${u%.gpl}&action=last20&fr=0&to=100" 2>/dev/null | grep -A1 Unchecked | tail -n1;
+    a=$(tail -n1 $u | awk '{print $1}');
+    b=$(curl "http://factordb.com/sequences.php?se=1&aq=${u%.gpl}&action=last20&fr=0&to=100" 2>/dev/null | grep -A1 Unchecked | tail -n1 | tr -d "</>td")
+    status="Server ahead"
+    if [ $b -eq $((1+$a)) ]; then status="Up to date"; fi
+    if [ $b -lt $((1+$a)) ]; then
+	status="Server behind";
+	tail -n $(($a-$b+2)) ${u%.gpl}.ath >> for-sync
+    fi
+    echo $u $a $b $status
 done
